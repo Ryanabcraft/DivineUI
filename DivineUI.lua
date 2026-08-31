@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.2.2"
+DivineUI.Version = "1.2.3"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -127,10 +127,20 @@ end
 -- =====================================================================
 function DivineUI:CreateWindow(opts)
     opts = opts or {}
+    local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
+    -- Fallback detection for Studio / Delta mobile emulation
+    if UserInputService.TouchEnabled and UserInputService.MouseEnabled then
+        -- PC with touch screen, treat as desktop
+        IsMobile = false
+    end
+    local defaultSize = IsMobile and UDim2.fromOffset(360, 380) or UDim2.fromOffset(560, 420)
+    local defaultSideBar = IsMobile and 110 or 150
     local title = opts.Title or "Divine Hub"
     local subtitle = opts.Subtitle or "iOS 18 EDITION"
-    local size = opts.Size or UDim2.new(0, 540, 0, 420)
-    local pos = opts.Position or UDim2.new(0.5, -270, 0.5, -210)
+    local size = opts.Size or defaultSize
+    local pos = opts.Position or UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
+    -- Platform adapt: add ScreenGui UIScale for mobile
+    local platformScale = IsMobile and 0.9 or 1
 
     local parent = getGuiParent()
     if parent:FindFirstChild("DivineHub_UI") then
@@ -145,6 +155,11 @@ function DivineUI:CreateWindow(opts)
     Gui.DisplayOrder = 999
     pcall(function() Gui.Parent = parent end)
     if not Gui.Parent then Gui.Parent = LP:WaitForChild("PlayerGui") end
+    if platformScale ~= 1 then
+        local sc = Instance.new("UIScale")
+        sc.Scale = platformScale
+        sc.Parent = Gui
+    end
 
     local Main = Instance.new("Frame")
     Main.Name = "MainFrame"
@@ -217,7 +232,7 @@ function DivineUI:CreateWindow(opts)
     corner(MinBtn, UDim.new(1, 0))
 
     local sideBarWidth = opts.SideBarWidth
-    if sideBarWidth == nil then sideBarWidth = 150 end
+    if sideBarWidth == nil then sideBarWidth = defaultSideBar end
     local isSideBar = sideBarWidth and sideBarWidth > 0
 
     local TabsBar = Instance.new("Frame")
@@ -987,7 +1002,7 @@ function DivineUI:CreateWindow(opts)
             arrow.Position = UDim2.new(1, -22, 0.5, -8)
             arrow.Size = UDim2.new(0, 16, 0, 16)
             arrow.Parent = btn
-            local listFrame = Instance.new("Frame")
+            local listFrame = Instance.new("ScrollingFrame")
             listFrame.Size = UDim2.new(1, -20, 0, 0)
             listFrame.Position = UDim2.new(0, 10, 0, 58)
             listFrame.BackgroundColor3 = Color3.fromRGB(28, 24, 38)
@@ -995,6 +1010,12 @@ function DivineUI:CreateWindow(opts)
             listFrame.Visible = false
             listFrame.ClipsDescendants = true
             listFrame.ZIndex = 5
+            listFrame.CanvasSize = UDim2.new(0,0,0,0)
+            listFrame.ScrollBarThickness = 3
+            listFrame.ScrollBarImageColor3 = Theme.Accent
+            listFrame.ScrollingEnabled = true
+            listFrame.Active = true
+            listFrame.ScrollingDirection = Enum.ScrollingDirection.Y
             listFrame.Parent = row
             corner(listFrame, UDim.new(0, 8))
             stroke(listFrame, Theme.CardStroke, 1, 0.3)
@@ -1002,6 +1023,9 @@ function DivineUI:CreateWindow(opts)
             listLay.SortOrder = Enum.SortOrder.LayoutOrder
             listLay.Parent = listFrame
             padding(listFrame, 4, 4, 4, 4)
+            listLay:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                listFrame.CanvasSize = UDim2.new(0,0,0, listLay.AbsoluteContentSize.Y + 8)
+            end)
             local open = false
             local selected = def
             local function toggle()
@@ -1012,6 +1036,9 @@ function DivineUI:CreateWindow(opts)
                     listFrame.Size = UDim2.new(1, -20, 0, h)
                     row.Size = UDim2.new(1, 0, 0, 62 + h + 4)
                     arrow.Rotation = 180
+                    task.defer(function()
+                        listFrame.CanvasPosition = Vector2.new(0,0)
+                    end)
                 else
                     row.Size = UDim2.new(1, 0, 0, 62)
                     arrow.Rotation = 0
