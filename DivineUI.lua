@@ -488,7 +488,7 @@ function DivineUI:CreateWindow(opts)
 
         local Tab = {}
         Tab.Name = name
-        Tab.Button = tabBtn
+        Tab.TabButton = tabBtn
         Tab.Content = tabContent
         Tab.Layout = list
         Tab.Elements = {}
@@ -496,8 +496,8 @@ function DivineUI:CreateWindow(opts)
         local function select()
             for _, t in ipairs(Window.Tabs) do
                 t.Content.Visible = false
-                tween(t.Button, TweenInfo.new(0.2), {BackgroundTransparency = 1, BackgroundColor3 = Color3.fromRGB(58,52,70)})
-                t.Button.TextColor3 = Theme.SubText
+                tween(t.TabButton, TweenInfo.new(0.2), {BackgroundTransparency = 1, BackgroundColor3 = Color3.fromRGB(58,52,70)})
+                t.TabButton.TextColor3 = Theme.SubText
             end
             tabContent.Visible = true
             tween(tabBtn, TweenInfo.new(0.2), {BackgroundTransparency = 0.08, BackgroundColor3 = Theme.Accent})
