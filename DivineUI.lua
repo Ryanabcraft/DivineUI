@@ -822,74 +822,161 @@ function DivineUI:CreateWindow(opts)
         end
 
         function Tab:Toggle(opts3)
-            opts3 = opts3 or {}
-            local title = opts3.Title or opts3.Text or "Toggle"
-            local desc = opts3.Desc or opts3.Description or ""
-            local def = opts3.Default or opts3.Value or false
-            local cb = opts3.Callback or function() end
-            local flag = opts3.Flag
-            local row = Instance.new("Frame")
-            row.Size = UDim2.new(1, 0, 0, desc ~= "" and 58 or 48)
-            row.BackgroundTransparency = 1
-            row.Parent = tabContent
-            local tLbl = Instance.new("TextLabel")
-            tLbl.Text = title
-            tLbl.Font = Enum.Font.GothamBold
-            tLbl.TextSize = 12
-            tLbl.TextColor3 = Theme.Text
-            tLbl.BackgroundTransparency = 1
-            tLbl.Position = UDim2.new(0, 10, 0, 10)
-            tLbl.Size = UDim2.new(0, 170, 0, 16)
-            tLbl.TextXAlignment = Enum.TextXAlignment.Left
-            tLbl.Parent = row
-            if desc ~= "" then
-                local dLbl = Instance.new("TextLabel")
-                dLbl.Text = desc
-                dLbl.Font = Enum.Font.Gotham
-                dLbl.TextSize = 10
-                dLbl.TextColor3 = Theme.SubText
-                dLbl.BackgroundTransparency = 1
-                dLbl.Position = UDim2.new(0, 10, 0, 28)
-                dLbl.Size = UDim2.new(0, 190, 0, 14)
-                dLbl.TextXAlignment = Enum.TextXAlignment.Left
-                dLbl.Parent = row
-            end
-            local bg = Instance.new("TextButton")
-            bg.Text = ""
-            bg.AutoButtonColor = false
-            bg.Size = UDim2.new(0, 48, 0, 26)
-            bg.Position = UDim2.new(1, -58, 0.5, -13)
-            bg.BackgroundColor3 = def and Theme.Accent or Theme.SwitchOff
-            bg.BorderSizePixel = 0
-            bg.Parent = row
-            corner(bg, UDim.new(1, 0))
-            local knob = Instance.new("Frame")
-            knob.Size = UDim2.new(0, 22, 0, 22)
-            knob.Position = def and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
-            knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            knob.BorderSizePixel = 0
-            knob.Parent = bg
-            corner(knob, UDim.new(1, 0))
-            local state = def
-            local function set(v, noCB)
-                state = v
-                if flag then Window.Flags[flag] = v end
-                local pos = v and UDim2.new(1, -24, 0.5, -11) or UDim2.new(0, 2, 0.5, -11)
-                local col = v and Theme.Accent or Theme.SwitchOff
-                tween(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = pos})
-                tween(bg, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = col})
-                if not noCB then pcall(cb, v) end
-            end
-            bg.MouseButton1Click:Connect(function() set(not state) end)
-            local handle = {}
-            function handle:Set(v) set(v) end
-            function handle:Get() return state end
-            function handle:OnChanged(fn) cb = fn end
-            function handle:Destroy() row:Destroy() end
-            Window:_registerFlag(flag, handle, def)
-            table.insert(Tab.Elements, handle)
-            return handle
+    opts3 = opts3 or {}
+
+    local title = opts3.Title or opts3.Text or "Toggle"
+    local desc = opts3.Desc or opts3.Description or ""
+    local def = opts3.Default or opts3.Value or false
+    local cb = opts3.Callback or function() end
+    local flag = opts3.Flag
+
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, desc ~= "" and 58 or 48)
+    row.BackgroundTransparency = 1
+    row.Parent = tabContent
+
+    -- Título
+    local tLbl = Instance.new("TextLabel")
+    tLbl.Text = title
+    tLbl.Font = Enum.Font.GothamBold
+    tLbl.TextSize = 12
+    tLbl.TextColor3 = Theme.Text
+    tLbl.BackgroundTransparency = 1
+    tLbl.Position = UDim2.new(0, 10, 0, 10)
+
+    -- Responsivo:
+    -- reserva espaço para o switch à direita
+    tLbl.Size = UDim2.new(1, -82, 0, 16)
+
+    tLbl.TextXAlignment = Enum.TextXAlignment.Left
+    tLbl.TextTruncate = Enum.TextTruncate.AtEnd
+    tLbl.Parent = row
+
+    -- Descrição
+    if desc ~= "" then
+        local dLbl = Instance.new("TextLabel")
+        dLbl.Text = desc
+        dLbl.Font = Enum.Font.Gotham
+        dLbl.TextSize = 10
+        dLbl.TextColor3 = Theme.SubText
+        dLbl.BackgroundTransparency = 1
+        dLbl.Position = UDim2.new(0, 10, 0, 28)
+
+        -- Responsivo também
+        dLbl.Size = UDim2.new(1, -82, 0, 14)
+
+        dLbl.TextXAlignment = Enum.TextXAlignment.Left
+        dLbl.TextTruncate = Enum.TextTruncate.AtEnd
+        dLbl.Parent = row
+    end
+
+    -- Fundo do switch
+    local bg = Instance.new("TextButton")
+    bg.Text = ""
+    bg.AutoButtonColor = false
+    bg.Size = UDim2.new(0, 48, 0, 26)
+    bg.Position = UDim2.new(1, -58, 0.5, -13)
+    bg.BackgroundColor3 = def and Theme.Accent or Theme.SwitchOff
+    bg.BorderSizePixel = 0
+    bg.Parent = row
+
+    corner(bg, UDim.new(1, 0))
+
+    -- Bolinha do switch
+    local knob = Instance.new("Frame")
+    knob.Size = UDim2.new(0, 22, 0, 22)
+
+    knob.Position = def
+        and UDim2.new(1, -24, 0.5, -11)
+        or UDim2.new(0, 2, 0.5, -11)
+
+    knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    knob.BorderSizePixel = 0
+    knob.Parent = bg
+
+    corner(knob, UDim.new(1, 0))
+
+    local state = def
+
+    local function set(v, noCB)
+        state = v
+
+        if flag then
+            Window.Flags[flag] = v
         end
+
+        local pos = v
+            and UDim2.new(1, -24, 0.5, -11)
+            or UDim2.new(0, 2, 0.5, -11)
+
+        local col = v
+            and Theme.Accent
+            or Theme.SwitchOff
+
+        tween(
+            knob,
+            TweenInfo.new(
+                0.2,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Position = pos
+            }
+        )
+
+        tween(
+            bg,
+            TweenInfo.new(
+                0.2,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                BackgroundColor3 = col
+            }
+        )
+
+        if not noCB then
+            pcall(cb, v)
+        end
+    end
+
+    bg.MouseButton1Click:Connect(function()
+        set(not state)
+    end)
+
+    local handle = {}
+
+    function handle:Set(v)
+        set(v)
+    end
+
+    function handle:Get()
+        return state
+    end
+
+    function handle:OnChanged(fn)
+        cb = fn
+    end
+
+    function handle:Destroy()
+        row:Destroy()
+    end
+
+    Window:_registerFlag(
+        flag,
+        handle,
+        def
+    )
+
+    table.insert(
+        Tab.Elements,
+        handle
+    )
+
+    return handle
+end
 
         function Tab:Slider(opts3)
             opts3 = opts3 or {}
