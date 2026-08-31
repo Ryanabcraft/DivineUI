@@ -16,7 +16,7 @@ repeat task.wait() until LP.Character and LP.Character:FindFirstChild("HumanoidR
 local IsMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 
 -- DivineUI
-local DivineUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ryanabcraft/DivineUI/7552f749eb3eb3604e29a311c6d1128122cde366/DivineUI.lua"))()
+local DivineUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ryanabcraft/DivineUI/84e2c5a949eba081b44ba3b2cf3b95920a4eeaa6/DivineUI.lua"))()
 
 local Window = DivineUI:CreateWindow({
     Title = "Steal an egg",
