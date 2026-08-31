@@ -56,28 +56,34 @@ Window:Notify({Title="Pronto", Desc="UI carregada"})
 
 ### Window
 ```lua
-DivineUI:CreateWindow({ Title, Subtitle, Size, Position }) -> Window
+DivineUI:CreateWindow({ Title, Subtitle, Size, Position, ConfigName, AutoSave }) -> Window
 Window:Tab({ Title, Icon }) -> Tab
 Window:Notify({ Title, Desc, Duration })
 Window:SetTitle(title, subtitle)
 Window:Destroy()
 Window:Toggle(bool) -- mostra/esconde
+Window:SaveConfig(name) -- salva Flags em DivineUI_Configs/name.json (writefile)
+Window:LoadConfig(name) -- carrega e aplica
+Window:GetFlag(flag) -> value
 -- Header arrastável, Minimize (—/+), Close (✕), Tabs em pill
 ```
 
 ### Tab
 ```lua
 Tab:Toggle({ Title, Desc, Default, Callback, Flag }) -> Handle { Set, Get, OnChanged, Destroy }
-Tab:Slider({ Title, Min, Max, Default, Step, Suffix, Callback }) -> Handle
-Tab:Button({ Title, Desc, Callback }) -> Handle
-Tab:Input({ Title, Placeholder, Default, Callback }) -> Handle
-Tab:Dropdown({ Title, Options, Default, Callback }) -> Handle { Set, Get, SetOptions }
+Tab:Slider({ Title, Min, Max, Default, Step, Suffix, Callback, Flag }) -> Handle
+Tab:Button({ Title, Callback }) -> Handle
+Tab:Input({ Title, Placeholder, Default, Callback, Flag }) -> Handle
+Tab:Dropdown({ Title, Options, Default, Callback, Flag }) -> Handle { Set, Get, SetOptions }
+Tab:Keybind({ Title, Desc, Default (KeyCode), Callback, Flag }) -> Handle { Set, Get }
+Tab:ColorPicker({ Title, Desc, Default (Color3), Callback, Flag, Presets }) -> Handle { Set, Get }
 Tab:Label({ Text, Desc }) / Tab:Paragraph
 Tab:Section({ Title })
 Tab:Divider()
 ```
 
 Todos os handles expõem `:Set(v)`, `:Get()`, `:Destroy()`.
+Use `Flag` para Config Save: `Window:SaveConfig("minhaCfg")` salva todos os Flags automaticamente (Color3 e KeyCode serializados).
 
 ## Tema
 
@@ -95,10 +101,18 @@ local Theme = {
 
 Troque `Theme.Accent` para mudar toda a lib.
 
+## Changelog
+
+### v1.1.0
+- `Keybind` com captura visual (`...` 5s timeout, `Esc` cancela) + listener global
+- `ColorPicker` com preview, hex `#RRGGBB`, presets e `TextBox` editável
+- `Flag` + `Config Save/Load` (`writefile/readfile` em `DivineUI_Configs/*.json`) com suporte a `Color3` e `Enum.KeyCode`
+- `example.lua` atualizado com demo completo v1.1
+
 ## Próximos passos sugeridos
 
-- [ ] `Toggle` com `Flag` + `Config Save` (writefile/readfile) auto
-- [ ] `Keybind` e `ColorPicker`
+- [x] `Toggle` com `Flag` + `Config Save` (writefile/readfile) auto
+- [x] `Keybind` e `ColorPicker`
 - [ ] `Search` nas tabs
 - [x] Hospedar `DivineUI.lua` no GitHub/Pastefy para `HttpGet` → `https://raw.githubusercontent.com/Ryanabcraft/DivineUI/main/DivineUI.lua`
 
