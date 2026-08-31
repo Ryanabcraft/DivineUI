@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.1.2"
+DivineUI.Version = "1.2.0"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -33,6 +33,25 @@ local Theme = {
     Success = Color3.fromRGB(52, 211, 153),
     Warning = Color3.fromRGB(251, 191, 36),
     Error = Color3.fromRGB(248, 113, 113),
+}
+
+-- Lucide-like icon map (ImageLabel) - fallback to text if not found
+local ICONS = {
+    ["egg"] = "rbxassetid://6031075938",
+    ["eye"] = "rbxassetid://6031090997",
+    ["paw-print"] = "rbxassetid://6031094677",
+    ["wrench"] = "rbxassetid://6031094678",
+    ["user"] = "rbxassetid://6031090997",
+    ["settings"] = "rbxassetid://6031090997",
+    ["zap"] = "rbxassetid://6031090997",
+    ["sprout"] = "rbxassetid://6031090997",
+    ["flame"] = "rbxassetid://6031090997",
+    ["moon"] = "rbxassetid://6031090997",
+    ["sun"] = "rbxassetid://6031090997",
+    ["map"] = "rbxassetid://6031090997",
+    ["x"] = "rbxassetid://6031090997",
+    ["chevron-down"] = "rbxassetid://6031090997",
+    ["chevron-up"] = "rbxassetid://6031090997",
 }
 
 local function getGuiParent()
@@ -197,10 +216,19 @@ function DivineUI:CreateWindow(opts)
     MinBtn.Parent = Header
     corner(MinBtn, UDim.new(1, 0))
 
+    local sideBarWidth = opts.SideBarWidth
+    if sideBarWidth == nil then sideBarWidth = 150 end
+    local isSideBar = sideBarWidth and sideBarWidth > 0
+
     local TabsBar = Instance.new("Frame")
     TabsBar.Name = "TabsBar"
-    TabsBar.Size = UDim2.new(1, -28, 0, 34)
-    TabsBar.Position = UDim2.new(0, 14, 0, 56)
+    if isSideBar then
+        TabsBar.Size = UDim2.new(0, sideBarWidth, 1, -70)
+        TabsBar.Position = UDim2.new(0, 14, 0, 60)
+    else
+        TabsBar.Size = UDim2.new(1, -28, 0, 34)
+        TabsBar.Position = UDim2.new(0, 14, 0, 56)
+    end
     TabsBar.BackgroundColor3 = Theme.Card
     TabsBar.BackgroundTransparency = 0.35
     TabsBar.BorderSizePixel = 0
@@ -210,15 +238,20 @@ function DivineUI:CreateWindow(opts)
     padding(TabsBar, 4, 4, 4, 4)
 
     local TabsLayout = Instance.new("UIListLayout")
-    TabsLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabsLayout.FillDirection = isSideBar and Enum.FillDirection.Vertical or Enum.FillDirection.Horizontal
     TabsLayout.Padding = UDim.new(0, 4)
     TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabsLayout.Parent = TabsBar
 
     local ContentWrap = Instance.new("Frame")
     ContentWrap.Name = "ContentWrap"
-    ContentWrap.Size = UDim2.new(1, -28, 1, -102)
-    ContentWrap.Position = UDim2.new(0, 14, 0, 96)
+    if isSideBar then
+        ContentWrap.Size = UDim2.new(1, -sideBarWidth -28, 1, -70)
+        ContentWrap.Position = UDim2.new(0, 14 + sideBarWidth + 10, 0, 60)
+    else
+        ContentWrap.Size = UDim2.new(1, -28, 1, -102)
+        ContentWrap.Position = UDim2.new(0, 14, 0, 96)
+    end
     ContentWrap.BackgroundColor3 = Theme.Card
     ContentWrap.BackgroundTransparency = Theme.CardTrans
     ContentWrap.BorderSizePixel = 0
@@ -226,6 +259,43 @@ function DivineUI:CreateWindow(opts)
     ContentWrap.Parent = Main
     corner(ContentWrap, UDim.new(0, 16))
     stroke(ContentWrap, Theme.CardStroke, 1, 0.5)
+
+    -- Resizable handle (WindUI style)
+    if opts.Resizable ~= false then
+        local ResizeHandle = Instance.new("TextButton")
+        ResizeHandle.Name = "ResizeHandle"
+        ResizeHandle.Text = "⋯"
+        ResizeHandle.Font = Enum.Font.GothamBold
+        ResizeHandle.TextSize = 10
+        ResizeHandle.TextColor3 = Theme.Muted
+        ResizeHandle.BackgroundTransparency = 1
+        ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+        ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+        ResizeHandle.AutoButtonColor = false
+        ResizeHandle.ZIndex = 10
+        ResizeHandle.Parent = Main
+        local resizing, startPos, startSize
+        ResizeHandle.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                resizing = true
+                startPos = input.Position
+                startSize = Main.Size
+                input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then resizing=false end end)
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if resizing and (input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch) then
+                local delta = input.Position - startPos
+                local minW, minH = 480, 320
+                local maxW, maxH = 720, 520
+                if opts.MinSize then minW, minH = opts.MinSize.X, opts.MinSize.Y end
+                if opts.MaxSize then maxW, maxH = opts.MaxSize.X, opts.MaxSize.Y end
+                local newW = math.clamp(startSize.X.Offset + delta.X, minW, maxW)
+                local newH = math.clamp(startSize.Y.Offset + delta.Y, minH, maxH)
+                Main.Size = UDim2.new(0, newW, 0, newH)
+            end
+        end)
+    end
 
     local NotifRoot = Instance.new("Frame")
     NotifRoot.Name = "Notifications"
@@ -452,18 +522,35 @@ function DivineUI:CreateWindow(opts)
 
         local tabBtn = Instance.new("TextButton")
         tabBtn.Name = name
-        tabBtn.Text = (icon ~= "" and icon.." " or "") .. name
         tabBtn.Font = Enum.Font.GothamMedium
         tabBtn.TextSize = 11
         tabBtn.TextColor3 = Theme.SubText
         tabBtn.BackgroundColor3 = Color3.fromRGB(58, 52, 70)
         tabBtn.BackgroundTransparency = 1
-        tabBtn.Size = UDim2.new(0, 0, 1, 0)
-        tabBtn.AutomaticSize = Enum.AutomaticSize.X
         tabBtn.AutoButtonColor = false
         tabBtn.Parent = TabsBar
         corner(tabBtn, UDim.new(0, 8))
-        padding(tabBtn, 12, 0, 12, 0)
+        if isSideBar then
+            tabBtn.Size = UDim2.new(1, -8, 0, 32)
+            tabBtn.Text = "  " .. name
+            tabBtn.TextXAlignment = Enum.TextXAlignment.Left
+            padding(tabBtn, 28, 0, 12, 0)
+            if icon ~= "" then
+                local iconImg = Instance.new("ImageLabel")
+                iconImg.Name = "Icon"
+                iconImg.Size = UDim2.new(0,16,0,16)
+                iconImg.Position = UDim2.new(0,8,0.5,-8)
+                iconImg.BackgroundTransparency = 1
+                iconImg.Image = ICONS[icon] or "rbxassetid://6031075938"
+                iconImg.ImageColor3 = Theme.SubText
+                iconImg.Parent = tabBtn
+            end
+        else
+            tabBtn.Text = (icon ~= "" and icon.." " or "") .. name
+            tabBtn.Size = UDim2.new(0, 0, 1, 0)
+            tabBtn.AutomaticSize = Enum.AutomaticSize.X
+            padding(tabBtn, 12, 0, 12, 0)
+        end
 
         local tabContent = Instance.new("ScrollingFrame")
         tabContent.Name = name.."_Content"
@@ -498,10 +585,14 @@ function DivineUI:CreateWindow(opts)
                 t.Content.Visible = false
                 tween(t.TabButton, TweenInfo.new(0.2), {BackgroundTransparency = 1, BackgroundColor3 = Color3.fromRGB(58,52,70)})
                 t.TabButton.TextColor3 = Theme.SubText
+                local ic = t.TabButton:FindFirstChild("Icon")
+                if ic then tween(ic, TweenInfo.new(0.2), {ImageColor3 = Theme.SubText}) end
             end
             tabContent.Visible = true
             tween(tabBtn, TweenInfo.new(0.2), {BackgroundTransparency = 0.08, BackgroundColor3 = Theme.Accent})
             tabBtn.TextColor3 = Theme.Text
+            local selIcon = tabBtn:FindFirstChild("Icon")
+            if selIcon then tween(selIcon, TweenInfo.new(0.2), {ImageColor3 = Theme.Text}) end
             Window.CurrentTab = Tab
         end
 
@@ -877,14 +968,13 @@ function DivineUI:CreateWindow(opts)
             lbl.Size = UDim2.new(1, -30, 1, 0)
             lbl.TextXAlignment = Enum.TextXAlignment.Left
             lbl.Parent = btn
-            local arrow = Instance.new("TextLabel")
-            arrow.Text = "v"
-            arrow.Font = Enum.Font.GothamBold
-            arrow.TextSize = 12
-            arrow.TextColor3 = Theme.SubText
+            local arrow = Instance.new("ImageLabel")
+            arrow.Name = "Arrow"
+            arrow.Image = ICONS["chevron-down"] or "rbxassetid://6031090997"
+            arrow.ImageColor3 = Theme.SubText
             arrow.BackgroundTransparency = 1
-            arrow.Position = UDim2.new(1, -20, 0, 0)
-            arrow.Size = UDim2.new(0, 20, 1, 0)
+            arrow.Position = UDim2.new(1, -22, 0.5, -8)
+            arrow.Size = UDim2.new(0, 16, 0, 16)
             arrow.Parent = btn
             local listFrame = Instance.new("Frame")
             listFrame.Size = UDim2.new(1, -20, 0, 0)
@@ -910,10 +1000,10 @@ function DivineUI:CreateWindow(opts)
                     local h = math.min(#options * 28 + 8, 140)
                     listFrame.Size = UDim2.new(1, -20, 0, h)
                     row.Size = UDim2.new(1, 0, 0, 62 + h + 4)
-                    arrow.Text = "^"
+                    arrow.Rotation = 180
                 else
                     row.Size = UDim2.new(1, 0, 0, 62)
-                    arrow.Text = "v"
+                    arrow.Rotation = 0
                 end
             end
             for _, opt in ipairs(options) do
@@ -1132,7 +1222,7 @@ function DivineUI:CreateWindow(opts)
             local function togglePicker()
                 expanded = not expanded
                 if expanded then
-                    row.Size = UDim2.new(1, 0, 0, 110)
+                    row.Size = UDim2.new(1, 0, 0, 150)
                     pickerFrame.Visible = true
                 else
                     row.Size = UDim2.new(1, 0, 0, 52)
@@ -1141,7 +1231,7 @@ function DivineUI:CreateWindow(opts)
             end
 
             pickerFrame = Instance.new("Frame")
-            pickerFrame.Size = UDim2.new(1, -20, 0, 52)
+            pickerFrame.Size = UDim2.new(1, -20, 0, 92)
             pickerFrame.Position = UDim2.new(0, 10, 0, 52)
             pickerFrame.BackgroundTransparency = 1
             pickerFrame.Visible = false
@@ -1168,9 +1258,62 @@ function DivineUI:CreateWindow(opts)
                 b.MouseButton1Click:Connect(function() apply(col) end)
             end
 
+            -- Hue bar (HSV)
+            local hueBar = Instance.new("TextButton")
+            hueBar.Text = ""
+            hueBar.AutoButtonColor = false
+            hueBar.Size = UDim2.new(1, 0, 0, 12)
+            hueBar.Position = UDim2.new(0, 0, 0, 34)
+            hueBar.BackgroundColor3 = Color3.fromRGB(255,255,255)
+            hueBar.Parent = pickerFrame
+            corner(hueBar, UDim.new(1, 0))
+            local hueGrad = Instance.new("UIGradient")
+            hueGrad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(255,0,0)),
+                ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255,255,0)),
+                ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0,255,0)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0,255,255)),
+                ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0,0,255)),
+                ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255,0,255)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0)),
+            })
+            hueGrad.Parent = hueBar
+            local hueThumb = Instance.new("Frame")
+            hueThumb.Size = UDim2.new(0, 4, 0, 16)
+            hueThumb.Position = UDim2.new(0.5, -2, 0.5, -8)
+            hueThumb.BackgroundColor3 = Color3.fromRGB(255,255,255)
+            hueThumb.BorderSizePixel = 0
+            hueThumb.Parent = hueBar
+            corner(hueThumb, UDim.new(0, 2))
+            stroke(hueThumb, Color3.fromRGB(0,0,0), 1, 0.5)
+            do
+                local draggingHue = false
+                local function updateHue(input)
+                    local rel = math.clamp((input.Position.X - hueBar.AbsolutePosition.X)/hueBar.AbsoluteSize.X,0,1)
+                    hueThumb.Position = UDim2.new(rel, -2, 0.5, -8)
+                    local c = Color3.fromHSV(rel, 1, 1)
+                    apply(c)
+                    hexBox.Text = toHex(c)
+                end
+                hueBar.InputBegan:Connect(function(input)
+                    if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+                        draggingHue=true
+                        updateHue(input)
+                    end
+                end)
+                UserInputService.InputEnded:Connect(function(input)
+                    if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then draggingHue=false end
+                end)
+                UserInputService.InputChanged:Connect(function(input)
+                    if draggingHue and (input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch) then
+                        updateHue(input)
+                    end
+                end)
+            end
+
             local hexBoxWrap = Instance.new("Frame")
             hexBoxWrap.Size = UDim2.new(1, 0, 0, 22)
-            hexBoxWrap.Position = UDim2.new(0, 0, 0, 32)
+            hexBoxWrap.Position = UDim2.new(0, 0, 0, 52)
             hexBoxWrap.BackgroundColor3 = Color3.fromRGB(28,24,38)
             hexBoxWrap.Parent = pickerFrame
             corner(hexBoxWrap, UDim.new(0, 6))
