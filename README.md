@@ -1,14 +1,14 @@
-# DivineUI — iOS 18 Dark Glass • v1.2.3
+# DivineUI — iOS 18 Dark Glass • v1.2.5
 
 Biblioteca própria estilo **WindUI** com visual **iOS 18 Dark Glass** (purple `#AF52DE`, glassmorphism, pill switches). Criada a partir do template `Divine Hub` para ser **reusável em qualquer hub futuro** — PC e Mobile.
 
-> **Versão atual:** `v1.2.3` — `https://raw.githubusercontent.com/Ryanabcraft/DivineUI/main/DivineUI.lua` — testada em `Steal An Egg` PlaceId `107778070777162` via Real MCP.
+> **Versão atual:** `v1.2.5` — `https://raw.githubusercontent.com/Ryanabcraft/DivineUI/main/DivineUI.lua` — testada em `Steal An Egg` PlaceId `107778070777162` via Real MCP.
 
 ## Estrutura
 
 ```
 divineui/
-├── DivineUI.lua                  # lib principal v1.2.3 (loadstring)
+├── DivineUI.lua                  # lib principal v1.2.5 (loadstring)
 ├── example.lua                   # demo v1.2 (4 tabs + SideBar + HSV)
 ├── example_original_template.lua # recriação 1:1 do paste 315x275
 ├── steal_an_egg_divineui.lua     # Steal An Egg completo 7 tabs (WindUI → DivineUI)
@@ -130,7 +130,13 @@ Troque `Theme.Accent` para tema global. `ICONS` mapeia nome lucide → `rbxasset
 
 ## Changelog
 
-### v1.2.3 — atual
+### v1.2.5 — atual
+- `ChatGPT gremlins` fix — `resize+minimize` agora salva `fullSize = Main.Size` antes de minimizar, `ResizeHandle` atualiza `fullSize` e `mobile min 320x280 vs 480x320`, `Keybind` enum `tostring:gsub("Enum%.","")`, `Icon` horizontal também cria `ImageLabel`, `Button` agora `Set/Get` além de `SetText`
+
+### v1.2.4
+- `Tema ColorPicker` agora `Window:SetAccent(color)` — `Theme.Accent/Accent2` + `tween` em `MainStroke`, `Slider fill`, `Button`, `ScrollBar`, `Tab` selecionada + `steal_an_egg` `Cor Tema` chama `SetAccent`
+
+### v1.2.3
 - `Dropdown` agora `ScrollingFrame` com `Canvas` dinâmico (`listFrame Active=true`) — 12 opções `All→Titan` não clipa mais, scroll interno `140px` + `Canvas 296px`
 - `Plataforma adaptativa` — `IsMobile = TouchEnabled and not MouseEnabled` → `PC 560x420 SideBar 150` / `Mobile 360x380 SideBar 110` + `UIScale 0.9` + `Touch drag` em header/slider/hue bar
 - `Minimize` agora `TabsBar.Visible=false ContentWrap.Visible=false` — sem sliver no rodapé
@@ -166,4 +172,4 @@ Troque `Theme.Accent` para tema global. `ICONS` mapeia nome lucide → `rbxasset
 - `gethui() > CoreGui > PlayerGui` (Delta / Mobile / PC)
 - `Touch + Mouse + Keyboard` — `Header drag`, `Slider/HueBar` drag, `Dropdown` scroll, `ScrollingFrame` touch scroll
 - `TweenService` para switches/sliders/tabs
-- Testado `Steal An Egg` `107778070777162` + `Fly` `v1.2.3` via Real MCP `Chiclete` `FPS 79`
+- Testado `Steal An Egg` `107778070777162` + `Fly` `v1.2.5` via Real MCP `Chiclete` `FPS 79`
