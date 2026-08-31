@@ -647,7 +647,7 @@ TabOutros:Button({ Title="Salvar Config", Callback=function() Window:SaveConfig(
 TabOutros:Button({ Title="Carregar Config", Callback=function() Window:LoadConfig("StealAnEgg_Divine") end })
 TabOutros:Label({Text="Atalho", Desc="Pressione K para abrir/fechar"})
 TabOutros:Keybind({ Title="Tecla Toggle UI", Default=Enum.KeyCode.K, Callback=function() Window:Toggle(not Window.Gui.Enabled) end })
-TabOutros:ColorPicker({ Title="Cor Tema", Default=Color3.fromRGB(175,82,222), Callback=function(c) notify("Cor", tostring(c)) end })
+TabOutros:ColorPicker({ Title="Cor Tema", Desc="Muda o tema ao vivo", Default=Color3.fromRGB(175,82,222), Flag="themeColor", Callback=function(c) Window:SetAccent(c) notify("Tema", "Cor atualizada!") end })
 
 STATE.onCleanup(function()
     if clearESP then pcall(clearESP) end

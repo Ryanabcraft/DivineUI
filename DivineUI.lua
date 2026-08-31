@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.2.3"
+DivineUI.Version = "1.2.4"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -141,6 +141,7 @@ function DivineUI:CreateWindow(opts)
     local pos = opts.Position or UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
     -- Platform adapt: add ScreenGui UIScale for mobile
     local platformScale = IsMobile and 0.9 or 1
+    local accentObjects = {}
 
     local parent = getGuiParent()
     if parent:FindFirstChild("DivineHub_UI") then
@@ -171,7 +172,8 @@ function DivineUI:CreateWindow(opts)
     Main.ClipsDescendants = true
     Main.Parent = Gui
     corner(Main, UDim.new(0, 22))
-    stroke(Main, Theme.Accent, 1.2, 0.35)
+    local MainStroke = stroke(Main, Theme.Accent, 1.2, 0.35)
+    table.insert(accentObjects, {obj=MainStroke, prop="Color"})
 
     local Header = Instance.new("Frame")
     Header.Name = "Header"
@@ -340,6 +342,37 @@ function DivineUI:CreateWindow(opts)
     Window.ConfigFolder = DivineUI.ConfigFolder
     Window.AutoSave = opts.AutoSave or false
     Window.ConfigName = opts.ConfigName or "default"
+    Window._accentObjects = accentObjects
+
+    function Window:SetAccent(color)
+        local old = Theme.Accent
+        Theme.Accent = color
+        Theme.Accent2 = Color3.new(math.clamp(color.R*0.85,0,1), math.clamp(color.G*0.85,0,1), math.clamp(color.B*0.85,0,1))
+        -- update registered objects
+        for _, info in ipairs(accentObjects) do
+            if info.obj and info.obj.Parent then
+                pcall(function()
+                    if info.prop == "Color" then
+                        tween(info.obj, TweenInfo.new(0.25), {Color = color})
+                    else
+                        tween(info.obj, TweenInfo.new(0.25), {[info.prop] = color})
+                    end
+                end)
+            end
+        end
+        -- brute force fallback for objects not tracked (toggles, sliders that were active)
+        for _, obj in ipairs(Gui:GetDescendants()) do
+            if obj:IsA("UIStroke") and obj.Color == old then
+                tween(obj, TweenInfo.new(0.25), {Color = color})
+            elseif (obj:IsA("Frame") or obj:IsA("TextButton")) and obj.BackgroundColor3 == old then
+                tween(obj, TweenInfo.new(0.25), {BackgroundColor3 = color})
+            elseif obj:IsA("ScrollingFrame") and obj.ScrollBarImageColor3 == old then
+                tween(obj, TweenInfo.new(0.25), {ScrollBarImageColor3 = color})
+            end
+        end
+        self:Notify({Title="Tema", Desc="Cor atualizada!"})
+    end
+    DivineUI._lastWindow = Window
 
     -- Drag
     do
@@ -589,6 +622,7 @@ function DivineUI:CreateWindow(opts)
         tabContent.Visible = false
         tabContent.Parent = ContentWrap
         padding(tabContent, 8, 8, 8, 8)
+        table.insert(accentObjects, {obj=tabContent, prop="ScrollBarImageColor3"})
 
         local list = Instance.new("UIListLayout")
         list.SortOrder = Enum.SortOrder.LayoutOrder
@@ -709,6 +743,7 @@ function DivineUI:CreateWindow(opts)
             btn.BorderSizePixel = 0
             btn.Parent = row
             corner(btn, UDim.new(0, 10))
+            table.insert(accentObjects, {obj=btn, prop="BackgroundColor3"})
             local lbl = Instance.new("TextLabel")
             lbl.Text = title
             lbl.Font = Enum.Font.GothamBold
@@ -850,6 +885,7 @@ function DivineUI:CreateWindow(opts)
             fill.BorderSizePixel = 0
             fill.Parent = track
             corner(fill, UDim.new(1, 0))
+            table.insert(accentObjects, {obj=fill, prop="BackgroundColor3"})
             local thumb = Instance.new("Frame")
             thumb.Size = UDim2.new(0, 14, 0, 14)
             thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
