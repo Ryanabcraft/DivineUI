@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.2.4"
+DivineUI.Version = "1.2.5"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -175,6 +175,9 @@ function DivineUI:CreateWindow(opts)
     local MainStroke = stroke(Main, Theme.Accent, 1.2, 0.35)
     table.insert(accentObjects, {obj=MainStroke, prop="Color"})
 
+    local fullSize = size
+    local miniSize = UDim2.new(fullSize.X.Scale, fullSize.X.Offset, 0, 54)
+
     local Header = Instance.new("Frame")
     Header.Name = "Header"
     Header.Size = UDim2.new(1, 0, 0, 54)
@@ -303,13 +306,21 @@ function DivineUI:CreateWindow(opts)
         UserInputService.InputChanged:Connect(function(input)
             if resizing and (input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch) then
                 local delta = input.Position - startPos
-                local minW, minH = 480, 320
+                local minW, minH
+                if IsMobile then
+                    minW, minH = 320, 280
+                else
+                    minW, minH = 480, 320
+                end
                 local maxW, maxH = 720, 520
                 if opts.MinSize then minW, minH = opts.MinSize.X, opts.MinSize.Y end
                 if opts.MaxSize then maxW, maxH = opts.MaxSize.X, opts.MaxSize.Y end
                 local newW = math.clamp(startSize.X.Offset + delta.X, minW, maxW)
                 local newH = math.clamp(startSize.Y.Offset + delta.Y, minH, maxH)
                 Main.Size = UDim2.new(0, newW, 0, newH)
+                if Main.Size.Y.Offset > 60 then
+                    fullSize = Main.Size
+                end
             end
         end)
     end
@@ -400,11 +411,10 @@ function DivineUI:CreateWindow(opts)
         end)
     end
 
-    local fullSize = size
-    local miniSize = UDim2.new(fullSize.X.Scale, fullSize.X.Offset, 0, 54)
     MinBtn.MouseButton1Click:Connect(function()
         Window.Minimized = not Window.Minimized
         if Window.Minimized then
+            fullSize = Main.Size
             TabsBar.Visible = false
             ContentWrap.Visible = false
             tween(Main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = miniSize})
@@ -483,17 +493,18 @@ function DivineUI:CreateWindow(opts)
     -- Config helpers
     local function serializeValue(v)
         if typeof(v) == "Color3" then return {__type="Color3", hex=toHex(v)}
-        elseif typeof(v) == "EnumItem" then return {__type="EnumItem", name=v.Name, enum=tostring(v.EnumType)}
+        elseif typeof(v) == "EnumItem" then return {__type="EnumItem", name=v.Name, enum=tostring(v.EnumType):gsub("Enum%.","")}
         else return v end
     end
 
     local function deserializeValue(v)
         if type(v) == "table" and v.__type == "Color3" then return fromHex(v.hex) or Color3.fromRGB(255,255,255)
         elseif type(v) == "table" and v.__type == "EnumItem" then
-            local ok, enumType = pcall(function() return Enum[v.enum] end)
+            local enumName = v.enum:gsub("Enum%.", "")
+            local ok, enumType = pcall(function() return Enum[enumName] end)
             if ok and enumType then
                 local ok2, item = pcall(function() return enumType[v.name] end)
-                if ok2 then return item end
+                if ok2 and item then return item end
             end
             return Enum.KeyCode.Q
         else return v end
@@ -598,10 +609,26 @@ function DivineUI:CreateWindow(opts)
                 iconImg.Parent = tabBtn
             end
         else
-            tabBtn.Text = (icon ~= "" and icon.." " or "") .. name
-            tabBtn.Size = UDim2.new(0, 0, 1, 0)
-            tabBtn.AutomaticSize = Enum.AutomaticSize.X
-            padding(tabBtn, 12, 0, 12, 0)
+            if icon ~= "" then
+                tabBtn.Text = "  " .. name
+                tabBtn.TextXAlignment = Enum.TextXAlignment.Left
+                tabBtn.Size = UDim2.new(0, 0, 1, 0)
+                tabBtn.AutomaticSize = Enum.AutomaticSize.X
+                padding(tabBtn, 28, 0, 12, 0)
+                local iconImg = Instance.new("ImageLabel")
+                iconImg.Name = "Icon"
+                iconImg.Size = UDim2.new(0,16,0,16)
+                iconImg.Position = UDim2.new(0,8,0.5,-8)
+                iconImg.BackgroundTransparency = 1
+                iconImg.Image = ICONS[icon] or "rbxassetid://6031075938"
+                iconImg.ImageColor3 = Theme.SubText
+                iconImg.Parent = tabBtn
+            else
+                tabBtn.Text = name
+                tabBtn.Size = UDim2.new(0, 0, 1, 0)
+                tabBtn.AutomaticSize = Enum.AutomaticSize.X
+                padding(tabBtn, 12, 0, 12, 0)
+            end
         end
 
         local tabContent = Instance.new("ScrollingFrame")
@@ -763,6 +790,8 @@ function DivineUI:CreateWindow(opts)
             btn.MouseLeave:Connect(function() tween(btn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Accent}) end)
             local handle = {}
             function handle:SetText(t) lbl.Text = t end
+            function handle:Set(v) lbl.Text = tostring(v) end
+            function handle:Get() return lbl.Text end
             function handle:Destroy() row:Destroy() end
             return handle
         end
