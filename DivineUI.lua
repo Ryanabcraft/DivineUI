@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.2.5"
+DivineUI.Version = "1.2.6"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -127,10 +127,19 @@ end
 -- =====================================================================
 function DivineUI:CreateWindow(opts)
     opts = opts or {}
-    local IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled and not UserInputService.MouseEnabled
-    -- Fallback detection for Studio / Delta mobile emulation
-    if UserInputService.TouchEnabled and UserInputService.MouseEnabled then
-        -- PC with touch screen, treat as desktop
+    local IsMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+    if UserInputService.TouchEnabled and UserInputService.KeyboardEnabled then
+        -- Studio with keyboard, still check mouse
+        IsMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+    end
+    if opts.ForceMobile or (getgenv and getgenv().DivineUI_ForceMobile) then
+        IsMobile = true
+    end
+    if opts.ForceDesktop then
+        IsMobile = false
+    end
+    -- Fallback for PC with touch screen
+    if UserInputService.TouchEnabled and UserInputService.MouseEnabled and not opts.ForceMobile and not (getgenv and getgenv().DivineUI_ForceMobile) then
         IsMobile = false
     end
     local defaultSize = IsMobile and UDim2.fromOffset(360, 380) or UDim2.fromOffset(560, 420)
@@ -595,18 +604,29 @@ function DivineUI:CreateWindow(opts)
         corner(tabBtn, UDim.new(0, 8))
         if isSideBar then
             tabBtn.Size = UDim2.new(1, -8, 0, 32)
-            tabBtn.Text = "  " .. name
-            tabBtn.TextXAlignment = Enum.TextXAlignment.Left
-            padding(tabBtn, 28, 0, 12, 0)
             if icon ~= "" then
-                local iconImg = Instance.new("ImageLabel")
-                iconImg.Name = "Icon"
-                iconImg.Size = UDim2.new(0,16,0,16)
-                iconImg.Position = UDim2.new(0,8,0.5,-8)
-                iconImg.BackgroundTransparency = 1
-                iconImg.Image = ICONS[icon] or "rbxassetid://6031075938"
-                iconImg.ImageColor3 = Theme.SubText
-                iconImg.Parent = tabBtn
+                if IsMobile and sideBarWidth <= 110 then
+                    -- Mobile pequeno: sem ícone para não sobrepor texto
+                    tabBtn.Text = name
+                    tabBtn.TextXAlignment = Enum.TextXAlignment.Center
+                    padding(tabBtn, 8, 0, 8, 0)
+                else
+                    tabBtn.Text = "  " .. name
+                    tabBtn.TextXAlignment = Enum.TextXAlignment.Left
+                    padding(tabBtn, 28, 0, 12, 0)
+                    local iconImg = Instance.new("ImageLabel")
+                    iconImg.Name = "Icon"
+                    iconImg.Size = UDim2.new(0,16,0,16)
+                    iconImg.Position = UDim2.new(0,8,0.5,-8)
+                    iconImg.BackgroundTransparency = 1
+                    iconImg.Image = ICONS[icon] or "rbxassetid://6031075938"
+                    iconImg.ImageColor3 = Theme.SubText
+                    iconImg.Parent = tabBtn
+                end
+            else
+                tabBtn.Text = name
+                tabBtn.TextXAlignment = Enum.TextXAlignment.Center
+                padding(tabBtn, 8, 0, 8, 0)
             end
         else
             if icon ~= "" then
