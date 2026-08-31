@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.2.6"
+DivineUI.Version = "1.2.7"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -147,8 +147,10 @@ function DivineUI:CreateWindow(opts)
     local title = opts.Title or "Divine Hub"
     local subtitle = opts.Subtitle or "iOS 18 EDITION"
     local size = opts.Size or defaultSize
+    if IsMobile and size.X.Offset >= 500 then
+        size = UDim2.fromOffset(360, 380)
+    end
     local pos = opts.Position or UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
-    -- Platform adapt: add ScreenGui UIScale for mobile
     local platformScale = IsMobile and 0.9 or 1
     local accentObjects = {}
 
@@ -247,6 +249,9 @@ function DivineUI:CreateWindow(opts)
 
     local sideBarWidth = opts.SideBarWidth
     if sideBarWidth == nil then sideBarWidth = defaultSideBar end
+    if IsMobile and sideBarWidth > 110 then
+        sideBarWidth = 110
+    end
     local isSideBar = sideBarWidth and sideBarWidth > 0
 
     local TabsBar = Instance.new("Frame")
