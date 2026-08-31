@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.2.0"
+DivineUI.Version = "1.2.1"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -558,8 +558,15 @@ function DivineUI:CreateWindow(opts)
         tabContent.BackgroundTransparency = 1
         tabContent.BorderSizePixel = 0
         tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-        tabContent.ScrollBarThickness = 2
+        tabContent.AutomaticCanvasSize = Enum.AutomaticSize.None
+        tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
+        tabContent.ScrollBarThickness = 4
         tabContent.ScrollBarImageColor3 = Theme.Accent
+        tabContent.ScrollBarImageTransparency = 0.3
+        tabContent.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+        tabContent.ScrollingEnabled = true
+        tabContent.Active = true
+        tabContent.ClipsDescendants = true
         tabContent.Visible = false
         tabContent.Parent = ContentWrap
         padding(tabContent, 8, 8, 8, 8)
