@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.1.0"
+DivineUI.Version = "1.1.2"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -171,7 +171,7 @@ function DivineUI:CreateWindow(opts)
 
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Name = "Close"
-    CloseBtn.Text = "✕"
+    CloseBtn.Text = "X"
     CloseBtn.Font = Enum.Font.GothamBold
     CloseBtn.TextSize = 12
     CloseBtn.TextColor3 = Color3.fromRGB(200, 200, 210)
@@ -185,7 +185,7 @@ function DivineUI:CreateWindow(opts)
 
     local MinBtn = Instance.new("TextButton")
     MinBtn.Name = "Minimize"
-    MinBtn.Text = "—"
+    MinBtn.Text = "-"
     MinBtn.Font = Enum.Font.GothamBold
     MinBtn.TextSize = 12
     MinBtn.TextColor3 = Color3.fromRGB(200, 200, 210)
@@ -291,7 +291,7 @@ function DivineUI:CreateWindow(opts)
             MinBtn.Text = "+"
         else
             tween(Main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = fullSize})
-            MinBtn.Text = "—"
+            MinBtn.Text = "-"
         end
     end)
 
@@ -878,7 +878,7 @@ function DivineUI:CreateWindow(opts)
             lbl.TextXAlignment = Enum.TextXAlignment.Left
             lbl.Parent = btn
             local arrow = Instance.new("TextLabel")
-            arrow.Text = "▾"
+            arrow.Text = "v"
             arrow.Font = Enum.Font.GothamBold
             arrow.TextSize = 12
             arrow.TextColor3 = Theme.SubText
@@ -910,10 +910,10 @@ function DivineUI:CreateWindow(opts)
                     local h = math.min(#options * 28 + 8, 140)
                     listFrame.Size = UDim2.new(1, -20, 0, h)
                     row.Size = UDim2.new(1, 0, 0, 62 + h + 4)
-                    arrow.Text = "▴"
+                    arrow.Text = "^"
                 else
                     row.Size = UDim2.new(1, 0, 0, 62)
-                    arrow.Text = "▾"
+                    arrow.Text = "v"
                 end
             end
             for _, opt in ipairs(options) do
