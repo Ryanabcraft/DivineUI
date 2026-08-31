@@ -7,7 +7,7 @@
 
 local DivineUI = {}
 DivineUI.__index = DivineUI
-DivineUI.Version = "1.2.1"
+DivineUI.Version = "1.2.2"
 DivineUI.ConfigFolder = "DivineUI_Configs"
 
 local TweenService = game:GetService("TweenService")
@@ -357,9 +357,13 @@ function DivineUI:CreateWindow(opts)
     MinBtn.MouseButton1Click:Connect(function()
         Window.Minimized = not Window.Minimized
         if Window.Minimized then
+            TabsBar.Visible = false
+            ContentWrap.Visible = false
             tween(Main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = miniSize})
             MinBtn.Text = "+"
         else
+            TabsBar.Visible = true
+            ContentWrap.Visible = true
             tween(Main, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = fullSize})
             MinBtn.Text = "-"
         end
